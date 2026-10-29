@@ -196,6 +196,9 @@ func unmarshal(in []byte, out interface{}, strict bool) (err error) {
 //                  method (see the IsZeroer interface type), in which
 //                  case the field will be excluded if IsZero returns true.
 //
+//     omitzero     Alias for omitempty. Accepted for compatibility with
+//                  Go 1.24 encoding/json field tags that use omitzero.
+//
 //     flow         Marshal using a flow style (useful for structs,
 //                  sequences and maps).
 //
@@ -558,7 +561,10 @@ func getStructInfo(st reflect.Type) (*structInfo, error) {
 		if len(fields) > 1 {
 			for _, flag := range fields[1:] {
 				switch flag {
-				case "omitempty":
+				case "omitempty", "omitzero":
+					// omitzero (Go 1.24 encoding/json) maps to the same
+					// behavior as omitempty in this package: zero values,
+					// including zero structs, are skipped on encode.
 					info.OmitEmpty = true
 				case "flow":
 					info.Flow = true

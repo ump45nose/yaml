@@ -1769,3 +1769,14 @@ func (s *S) TestFuzzCrashers(c *C) {
 //		yaml.Marshal(&v)
 //	}
 //}
+
+func (s *S) TestOmitZeroTagDoesNotPanic(c *C) {
+	type T struct {
+		A int `yaml:"a,omitzero"`
+		B int `yaml:"b,omitzero"`
+	}
+	var got T
+	err := yaml.Unmarshal([]byte("a: 1\n"), &got)
+	c.Assert(err, IsNil)
+	c.Assert(got, DeepEquals, T{A: 1})
+}

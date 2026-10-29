@@ -199,6 +199,18 @@ var marshalTests = []struct {
 		"{}\n",
 	}, {
 		&struct {
+			A int "a,omitzero"
+			B int "b,omitzero"
+		}{1, 0},
+		"a: 1\n",
+	}, {
+		&struct {
+			A int "a,omitzero"
+			B int "b,omitzero"
+		}{0, 0},
+		"{}\n",
+	}, {
+		&struct {
 			A *struct{ X, y int } "a,omitempty,flow"
 		}{&struct{ X, y int }{1, 2}},
 		"a: {x: 1}\n",
