@@ -793,7 +793,9 @@ func yaml_parser_fetch_next_token(parser *yaml_parser_t) (ok bool) {
 	}
 
 	// Is it the key indicator?
-	if parser.buffer[parser.buffer_pos] == '?' && (parser.flow_level > 0 || is_blankz(parser.buffer, parser.buffer_pos+1)) {
+	// In flow and block, '?' is a key indicator only when followed by a blank or break.
+	// Otherwise it may start (or continue) a plain scalar (issue #1070).
+	if parser.buffer[parser.buffer_pos] == '?' && is_blankz(parser.buffer, parser.buffer_pos+1) {
 		return yaml_parser_fetch_key(parser)
 	}
 
@@ -2723,10 +2725,12 @@ func yaml_parser_scan_plain_scalar(parser *yaml_parser_t, token *yaml_token_t) b
 		for !is_blankz(parser.buffer, parser.buffer_pos) {
 
 			// Check for indicators that may end a plain scalar.
+			// '?' is not a flow indicator (YAML 1.2 c-flow-indicator is only , [ ] { }),
+			// so a mid-scalar '?' must stay inside the plain scalar (issue #1070).
 			if (parser.buffer[parser.buffer_pos] == ':' && is_blankz(parser.buffer, parser.buffer_pos+1)) ||
 				(parser.flow_level > 0 &&
 					(parser.buffer[parser.buffer_pos] == ',' ||
-						parser.buffer[parser.buffer_pos] == '?' || parser.buffer[parser.buffer_pos] == '[' ||
+						parser.buffer[parser.buffer_pos] == '[' ||
 						parser.buffer[parser.buffer_pos] == ']' || parser.buffer[parser.buffer_pos] == '{' ||
 						parser.buffer[parser.buffer_pos] == '}')) {
 				break
